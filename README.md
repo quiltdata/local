@@ -73,8 +73,12 @@ configurable via `QUILT_CATALOG_URL` env var).
 
 ### Building and publishing
 
-1. Bump package version in `pyproject.toml`
+1. Make sure you set up [credentials for `poetry`](https://python-poetry.org/docs/repositories/#configuring-credentials)
 
-2. Make sure you set up [credentials for `poetry`](https://python-poetry.org/docs/repositories/#configuring-credentials)
+2. Bump package version in `pyproject.toml`
 
-3. Build and publish the package: `poetry publish --build`
+3. Update catalog commit hash in `catalog-commit` if required
+
+4. Commit, tag, push: `git c -am "release X.Y.Z" && git tag vX.Y.Z && git push && git push --tags`
+
+4. Build and publish the package: `make publish`
