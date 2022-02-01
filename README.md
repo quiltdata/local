@@ -81,4 +81,4 @@ configurable via `QUILT_CATALOG_URL` env var).
 
 4. Commit, tag, push: `git c -am "release X.Y.Z" && git tag vX.Y.Z && git push && git push --tags`
 
-4. Build and publish the package: `make publish`
+5. Build and publish the package: `make publish`
