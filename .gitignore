@@ -1,6 +1,7 @@
 *.egg-info
 *.py[cod]
 *.swp
+catalog-repo
 catalog_bundle
 dist
 .cache
