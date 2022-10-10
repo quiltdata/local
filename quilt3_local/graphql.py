@@ -201,6 +201,11 @@ async def query_package(*_, bucket: str, name: str):
     return PackageContext(bucket, name)
 
 
+@QueryType.field("status")
+async def query_status(*_):
+    return {"__typename": "Unavailable"}
+
+
 # TODO: load schema from a public shared folder
 with importlib_resources.path("quilt3_local", "schema.graphql") as schema_path:
     type_defs = ariadne.load_schema_from_path(str(schema_path))
