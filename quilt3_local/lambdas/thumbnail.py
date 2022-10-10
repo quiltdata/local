@@ -6,7 +6,6 @@ n-dimensional imaging formats. Stong assumptions as to the shape of the
 n-dimensional data are made, specifically that dimension order is STCZYX, or,
 Scene-Timepoint-Channel-SpacialZ-SpacialY-SpacialX.
 """
-import base64
 import json
 import sys
 from io import BytesIO
@@ -54,9 +53,6 @@ SCHEMA = {
         },
         'size': {
             'enum': list(SIZE_PARAMETER_MAP)
-        },
-        'output': {
-            'enum': ['json', 'raw']
         },
     },
     'required': ['url', 'size'],
@@ -218,58 +214,50 @@ def lambda_handler(request):
     # Parse request info
     url = request.args['url']
     size = SIZE_PARAMETER_MAP[request.args['size']]
-    output = request.args.get('output', 'json')
 
     # Handle request
     resp = requests.get(url)
-    if resp.ok:
-        try:
-            thumbnail_format = SUPPORTED_BROWSER_FORMATS.get(
-                imageio.get_reader(resp.content),
-                "PNG"
-            )
-        except ValueError:
-            thumbnail_format = "PNG"
-
-        # Read image data
-        img = AICSImage(resp.content)
-        orig_size = list(img.reader.data.shape)
-        # Generate a formatted ndarray using the image data
-        # Makes some assumptions for n-dim data
-        img = format_aicsimage_to_prepped(img)
-        # Send to Image object for thumbnail generation and saving to bytes
-        img = Image.fromarray(img)
-        # Generate thumbnail
-        img.thumbnail(size)
-        thumbnail_size = img.size
-        # Store the bytes
-        thumbnail_bytes = BytesIO()
-        img.save(thumbnail_bytes, thumbnail_format)
-        # Get bytes data
-        data = thumbnail_bytes.getvalue()
-        # Create metadata object
-        info = {
-            'original_size': orig_size,
-            'thumbnail_format': thumbnail_format,
-            'thumbnail_size': thumbnail_size,
+    if not resp.ok:
+        # Errored, return error code
+        ret_val = {
+            'error': resp.reason,
+            'text': resp.text,
         }
+        return make_json_response(resp.status_code, ret_val)
 
-        if output == 'json':
-            ret_val = {
-                'info': info,
-                'thumbnail': base64.b64encode(data).decode(),
-            }
-            return make_json_response(200, ret_val)
-        # Not JSON response ('raw')
-        headers = {
-            'Content-Type': Image.MIME[thumbnail_format],
-            QUILT_INFO_HEADER: json.dumps(info)
-        }
-        return 200, data, headers
+    try:
+        thumbnail_format = SUPPORTED_BROWSER_FORMATS.get(
+            imageio.get_reader(resp.content),
+            "PNG"
+        )
+    except ValueError:
+        thumbnail_format = "PNG"
 
-    # Errored, return error code
-    ret_val = {
-        'error': resp.reason,
-        'text': resp.text,
+    # Read image data
+    img = AICSImage(resp.content)
+    orig_size = list(img.reader.data.shape)
+    # Generate a formatted ndarray using the image data
+    # Makes some assumptions for n-dim data
+    img = format_aicsimage_to_prepped(img)
+    # Send to Image object for thumbnail generation and saving to bytes
+    img = Image.fromarray(img)
+    # Generate thumbnail
+    img.thumbnail(size)
+    thumbnail_size = img.size
+    # Store the bytes
+    thumbnail_bytes = BytesIO()
+    img.save(thumbnail_bytes, thumbnail_format)
+    # Get bytes data
+    data = thumbnail_bytes.getvalue()
+    # Create metadata object
+    info = {
+        'original_size': orig_size,
+        'thumbnail_format': thumbnail_format,
+        'thumbnail_size': thumbnail_size,
     }
-    return make_json_response(resp.status_code, ret_val)
+
+    headers = {
+        'Content-Type': Image.MIME[thumbnail_format],
+        QUILT_INFO_HEADER: json.dumps(info)
+    }
+    return 200, data, headers
