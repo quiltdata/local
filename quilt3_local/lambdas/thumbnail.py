@@ -8,6 +8,7 @@ Scene-Timepoint-Channel-SpacialZ-SpacialY-SpacialX.
 """
 import json
 import sys
+import tempfile
 from io import BytesIO
 from math import sqrt
 from typing import List, Tuple
@@ -233,14 +234,17 @@ def lambda_handler(request):
     except ValueError:
         thumbnail_format = "PNG"
 
-    # Read image data
-    img = AICSImage(resp.content)
-    orig_size = list(img.reader.data.shape)
-    # Generate a formatted ndarray using the image data
-    # Makes some assumptions for n-dim data
-    img = format_aicsimage_to_prepped(img)
+    with tempfile.NamedTemporaryFile() as tmp:
+        tmp.write(resp.content)
+        # Read image data
+        aimg = AICSImage(tmp.name)
+        orig_size = list(aimg.reader.data.shape)
+        # Generate a formatted ndarray using the image data
+        # Makes some assumptions for n-dim data
+        arr = format_aicsimage_to_prepped(aimg)
+
     # Send to Image object for thumbnail generation and saving to bytes
-    img = Image.fromarray(img)
+    img = Image.fromarray(arr)
     # Generate thumbnail
     img.thumbnail(size)
     thumbnail_size = img.size
