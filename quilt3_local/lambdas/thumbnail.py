@@ -22,6 +22,12 @@ from PIL import Image
 from .shared.decorator import QUILT_INFO_HEADER, api, validate
 from .shared.utils import get_default_origins, make_json_response
 
+from aicspylibczi import CziFile
+
+# monkey-patch for compatibility with older aicsimageio
+if not hasattr(CziFile, "dims_shape"):
+    setattr(CziFile, "dims_shape", CziFile.get_dims_shape)
+
 # Eventually we'll want to precompute/cache thumbnails, so we won't be able to support
 # arbitrary sizes. Might as well copy Dropbox' API:
 # https://www.dropbox.com/developers/documentation/http/documentation#files-get_thumbnail
