@@ -37,7 +37,7 @@ openpyxl = "^3.0.9"
 
 [tool.poetry.dev-dependencies]
 asgiproxy = "^0.0"
-black = "^21.9b0"
+black = "^22.10.0"
 uvicorn = {version = "^0.15.0", extras = ["standard"]}
 
 [tool.poetry.scripts]
