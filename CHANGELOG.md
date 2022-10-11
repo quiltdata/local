@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-10-11
+
 ### Changed
 
 - Update catalog (see [commit history](https://github.com/quiltdata/quilt/compare/4b09639ebd1c3135cd7a16f301ef4a8b6de18955...85b35361fde4edbbaf771b6b122aad46a0acaa0a) for details). Most notable changes:
@@ -22,5 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Initial public release.
 
-[Unreleased]: https://github.com/quiltdata/local/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/quiltdata/local/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/quiltdata/local/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/quiltdata/local/releases/tag/v1.0.1
