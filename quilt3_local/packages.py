@@ -1,7 +1,6 @@
 import asyncio
 import dataclasses
 import datetime
-import json
 import re
 import typing as T
 
@@ -79,15 +78,6 @@ def _make_filter_re(filter: T.Optional[str]) -> T.Optional[re.Pattern]:
     if not re.match("[*?]", filter):
         value = f".*{value}.*"
     return re.compile(f"^{value}$", re.I)
-
-
-def _try_parse_json(input: T.Optional[str]) -> T.Optional[dict]:
-    if not isinstance(input, str):
-        return None
-    try:
-        return json.loads(input)
-    except json.JSONDecodeError:
-        return None
 
 
 def _append_path(base: str, child: str) -> str:

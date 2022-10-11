@@ -6,9 +6,9 @@ n-dimensional imaging formats. Stong assumptions as to the shape of the
 n-dimensional data are made, specifically that dimension order is STCZYX, or,
 Scene-Timepoint-Channel-SpacialZ-SpacialY-SpacialX.
 """
-import base64
 import json
 import sys
+import tempfile
 from io import BytesIO
 from math import sqrt
 from typing import List, Tuple
@@ -22,6 +22,12 @@ from PIL import Image
 from .shared.decorator import QUILT_INFO_HEADER, api, validate
 from .shared.utils import get_default_origins, make_json_response
 
+from aicspylibczi import CziFile
+
+# monkey-patch for compatibility with older aicsimageio
+if not hasattr(CziFile, "dims_shape"):
+    setattr(CziFile, "dims_shape", CziFile.get_dims_shape)
+
 # Eventually we'll want to precompute/cache thumbnails, so we won't be able to support
 # arbitrary sizes. Might as well copy Dropbox' API:
 # https://www.dropbox.com/developers/documentation/http/documentation#files-get_thumbnail
@@ -34,33 +40,26 @@ SUPPORTED_SIZES = [
     (640, 480),
     (960, 640),
     (1024, 768),
-    (2048, 1536)
+    (2048, 1536),
 ]
 # Map URL parameters to actual sizes, e.g. 'w128h128' -> (128, 128)
-SIZE_PARAMETER_MAP = {f'w{w}h{h}': (w, h) for w, h in SUPPORTED_SIZES}
+SIZE_PARAMETER_MAP = {f"w{w}h{h}": (w, h) for w, h in SUPPORTED_SIZES}
 
 # If the image is one of these formats, retain the format after formatting
 SUPPORTED_BROWSER_FORMATS = {
     imageio.plugins.pillow.JPEGFormat.Reader: "JPG",
     imageio.plugins.pillow.PNGFormat.Reader: "PNG",
-    imageio.plugins.pillow.GIFFormat.Reader: "GIF"
+    imageio.plugins.pillow.GIFFormat.Reader: "GIF",
 }
 
 SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'url': {
-            'type': 'string'
-        },
-        'size': {
-            'enum': list(SIZE_PARAMETER_MAP)
-        },
-        'output': {
-            'enum': ['json', 'raw']
-        },
+    "type": "object",
+    "properties": {
+        "url": {"type": "string"},
+        "size": {"enum": list(SIZE_PARAMETER_MAP)},
     },
-    'required': ['url', 'size'],
-    'additionalProperties': False
+    "required": ["url", "size"],
+    "additionalProperties": False,
 }
 
 
@@ -74,7 +73,7 @@ def generate_factor_pairs(x: int) -> List[Tuple[int]]:
 
     for i in range(1, int(sqrt(x) + 1), step):
         if x % i == 0:
-            pairs.append((i, x//i))
+            pairs.append((i, x // i))
 
     return pairs
 
@@ -130,8 +129,9 @@ def _format_n_dim_ndarray(img: AICSImage) -> np.ndarray:
 
     # Even though the reader was n-dim,
     # check if the actual data is similar to YXC ("YX-RGBA" or "YX-RGB") and return
-    if (len(img.reader.data.shape) == 3 and (
-            img.reader.data.shape[2] == 3 or img.reader.data.shape[2] == 4)):
+    if len(img.reader.data.shape) == 3 and (
+        img.reader.data.shape[2] == 3 or img.reader.data.shape[2] == 4
+    ):
         return img.reader.data
 
     # Check which dimensions are available
@@ -154,7 +154,7 @@ def _format_n_dim_ndarray(img: AICSImage) -> np.ndarray:
                 padded = np.pad(
                     norm_img(img.data[0, 0, i, :, :, :].max(axis=0)),
                     ((5, 0), (5, 0)),
-                    mode="constant"
+                    mode="constant",
                 )
                 projections.append(padded)
             else:
@@ -162,7 +162,7 @@ def _format_n_dim_ndarray(img: AICSImage) -> np.ndarray:
                 padded = np.pad(
                     norm_img(img.data[0, 0, i, 0, :, :]),
                     ((5, 0), (5, 0)),
-                    mode="constant"
+                    mode="constant",
                 )
                 projections.append(padded)
 
@@ -203,7 +203,9 @@ def format_aicsimage_to_prepped(img: AICSImage) -> np.ndarray:
     determine if we need to format or not.
     """
     # These readers are specific for n dimensional images
-    if isinstance(img.reader, (readers.CziReader, readers.OmeTiffReader, readers.TiffReader)):
+    if isinstance(
+        img.reader, (readers.CziReader, readers.OmeTiffReader, readers.TiffReader)
+    ):
         return _format_n_dim_ndarray(img)
 
     return img.reader.data
@@ -216,60 +218,54 @@ def lambda_handler(request):
     Generate thumbnails for images in S3
     """
     # Parse request info
-    url = request.args['url']
-    size = SIZE_PARAMETER_MAP[request.args['size']]
-    output = request.args.get('output', 'json')
+    url = request.args["url"]
+    size = SIZE_PARAMETER_MAP[request.args["size"]]
 
     # Handle request
     resp = requests.get(url)
-    if resp.ok:
-        try:
-            thumbnail_format = SUPPORTED_BROWSER_FORMATS.get(
-                imageio.get_reader(resp.content),
-                "PNG"
-            )
-        except ValueError:
-            thumbnail_format = "PNG"
+    if not resp.ok:
+        # Errored, return error code
+        ret_val = {
+            "error": resp.reason,
+            "text": resp.text,
+        }
+        return make_json_response(resp.status_code, ret_val)
 
+    try:
+        thumbnail_format = SUPPORTED_BROWSER_FORMATS.get(
+            imageio.get_reader(resp.content), "PNG"
+        )
+    except ValueError:
+        thumbnail_format = "PNG"
+
+    with tempfile.NamedTemporaryFile() as tmp:
+        tmp.write(resp.content)
         # Read image data
-        img = AICSImage(resp.content)
-        orig_size = list(img.reader.data.shape)
+        aimg = AICSImage(tmp.name)
+        orig_size = list(aimg.reader.data.shape)
         # Generate a formatted ndarray using the image data
         # Makes some assumptions for n-dim data
-        img = format_aicsimage_to_prepped(img)
-        # Send to Image object for thumbnail generation and saving to bytes
-        img = Image.fromarray(img)
-        # Generate thumbnail
-        img.thumbnail(size)
-        thumbnail_size = img.size
-        # Store the bytes
-        thumbnail_bytes = BytesIO()
-        img.save(thumbnail_bytes, thumbnail_format)
-        # Get bytes data
-        data = thumbnail_bytes.getvalue()
-        # Create metadata object
-        info = {
-            'original_size': orig_size,
-            'thumbnail_format': thumbnail_format,
-            'thumbnail_size': thumbnail_size,
-        }
+        arr = format_aicsimage_to_prepped(aimg)
 
-        if output == 'json':
-            ret_val = {
-                'info': info,
-                'thumbnail': base64.b64encode(data).decode(),
-            }
-            return make_json_response(200, ret_val)
-        # Not JSON response ('raw')
-        headers = {
-            'Content-Type': Image.MIME[thumbnail_format],
-            QUILT_INFO_HEADER: json.dumps(info)
-        }
-        return 200, data, headers
-
-    # Errored, return error code
-    ret_val = {
-        'error': resp.reason,
-        'text': resp.text,
+    # Send to Image object for thumbnail generation and saving to bytes
+    img = Image.fromarray(arr)
+    # Generate thumbnail
+    img.thumbnail(size)
+    thumbnail_size = img.size
+    # Store the bytes
+    thumbnail_bytes = BytesIO()
+    img.save(thumbnail_bytes, thumbnail_format)
+    # Get bytes data
+    data = thumbnail_bytes.getvalue()
+    # Create metadata object
+    info = {
+        "original_size": orig_size,
+        "thumbnail_format": thumbnail_format,
+        "thumbnail_size": thumbnail_size,
     }
-    return make_json_response(resp.status_code, ret_val)
+
+    headers = {
+        "Content-Type": Image.MIME[thumbnail_format],
+        QUILT_INFO_HEADER: json.dumps(info),
+    }
+    return 200, data, headers
