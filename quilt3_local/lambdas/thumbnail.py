@@ -40,30 +40,26 @@ SUPPORTED_SIZES = [
     (640, 480),
     (960, 640),
     (1024, 768),
-    (2048, 1536)
+    (2048, 1536),
 ]
 # Map URL parameters to actual sizes, e.g. 'w128h128' -> (128, 128)
-SIZE_PARAMETER_MAP = {f'w{w}h{h}': (w, h) for w, h in SUPPORTED_SIZES}
+SIZE_PARAMETER_MAP = {f"w{w}h{h}": (w, h) for w, h in SUPPORTED_SIZES}
 
 # If the image is one of these formats, retain the format after formatting
 SUPPORTED_BROWSER_FORMATS = {
     imageio.plugins.pillow.JPEGFormat.Reader: "JPG",
     imageio.plugins.pillow.PNGFormat.Reader: "PNG",
-    imageio.plugins.pillow.GIFFormat.Reader: "GIF"
+    imageio.plugins.pillow.GIFFormat.Reader: "GIF",
 }
 
 SCHEMA = {
-    'type': 'object',
-    'properties': {
-        'url': {
-            'type': 'string'
-        },
-        'size': {
-            'enum': list(SIZE_PARAMETER_MAP)
-        },
+    "type": "object",
+    "properties": {
+        "url": {"type": "string"},
+        "size": {"enum": list(SIZE_PARAMETER_MAP)},
     },
-    'required': ['url', 'size'],
-    'additionalProperties': False
+    "required": ["url", "size"],
+    "additionalProperties": False,
 }
 
 
@@ -77,7 +73,7 @@ def generate_factor_pairs(x: int) -> List[Tuple[int]]:
 
     for i in range(1, int(sqrt(x) + 1), step):
         if x % i == 0:
-            pairs.append((i, x//i))
+            pairs.append((i, x // i))
 
     return pairs
 
@@ -133,8 +129,9 @@ def _format_n_dim_ndarray(img: AICSImage) -> np.ndarray:
 
     # Even though the reader was n-dim,
     # check if the actual data is similar to YXC ("YX-RGBA" or "YX-RGB") and return
-    if (len(img.reader.data.shape) == 3 and (
-            img.reader.data.shape[2] == 3 or img.reader.data.shape[2] == 4)):
+    if len(img.reader.data.shape) == 3 and (
+        img.reader.data.shape[2] == 3 or img.reader.data.shape[2] == 4
+    ):
         return img.reader.data
 
     # Check which dimensions are available
@@ -157,7 +154,7 @@ def _format_n_dim_ndarray(img: AICSImage) -> np.ndarray:
                 padded = np.pad(
                     norm_img(img.data[0, 0, i, :, :, :].max(axis=0)),
                     ((5, 0), (5, 0)),
-                    mode="constant"
+                    mode="constant",
                 )
                 projections.append(padded)
             else:
@@ -165,7 +162,7 @@ def _format_n_dim_ndarray(img: AICSImage) -> np.ndarray:
                 padded = np.pad(
                     norm_img(img.data[0, 0, i, 0, :, :]),
                     ((5, 0), (5, 0)),
-                    mode="constant"
+                    mode="constant",
                 )
                 projections.append(padded)
 
@@ -206,7 +203,9 @@ def format_aicsimage_to_prepped(img: AICSImage) -> np.ndarray:
     determine if we need to format or not.
     """
     # These readers are specific for n dimensional images
-    if isinstance(img.reader, (readers.CziReader, readers.OmeTiffReader, readers.TiffReader)):
+    if isinstance(
+        img.reader, (readers.CziReader, readers.OmeTiffReader, readers.TiffReader)
+    ):
         return _format_n_dim_ndarray(img)
 
     return img.reader.data
@@ -219,23 +218,22 @@ def lambda_handler(request):
     Generate thumbnails for images in S3
     """
     # Parse request info
-    url = request.args['url']
-    size = SIZE_PARAMETER_MAP[request.args['size']]
+    url = request.args["url"]
+    size = SIZE_PARAMETER_MAP[request.args["size"]]
 
     # Handle request
     resp = requests.get(url)
     if not resp.ok:
         # Errored, return error code
         ret_val = {
-            'error': resp.reason,
-            'text': resp.text,
+            "error": resp.reason,
+            "text": resp.text,
         }
         return make_json_response(resp.status_code, ret_val)
 
     try:
         thumbnail_format = SUPPORTED_BROWSER_FORMATS.get(
-            imageio.get_reader(resp.content),
-            "PNG"
+            imageio.get_reader(resp.content), "PNG"
         )
     except ValueError:
         thumbnail_format = "PNG"
@@ -261,13 +259,13 @@ def lambda_handler(request):
     data = thumbnail_bytes.getvalue()
     # Create metadata object
     info = {
-        'original_size': orig_size,
-        'thumbnail_format': thumbnail_format,
-        'thumbnail_size': thumbnail_size,
+        "original_size": orig_size,
+        "thumbnail_format": thumbnail_format,
+        "thumbnail_size": thumbnail_size,
     }
 
     headers = {
-        'Content-Type': Image.MIME[thumbnail_format],
-        QUILT_INFO_HEADER: json.dumps(info)
+        "Content-Type": Image.MIME[thumbnail_format],
+        QUILT_INFO_HEADER: json.dumps(info),
     }
     return 200, data, headers
