@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix tabular data previews via Perspective (add `tabular_preview` lambda).
+
 ## [1.1.0] - 2022-10-11
 
 ### Changed
