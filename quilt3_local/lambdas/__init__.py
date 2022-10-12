@@ -6,12 +6,13 @@ import sys
 
 import fastapi
 
-from . import preview, s3select, thumbnail
+from . import preview, s3select, tabular_preview, thumbnail
 
 LAMBDAS = {
     "thumbnail": thumbnail,
     "preview": preview,
     "s3select": s3select,
+    "tabular-preview": tabular_preview,
 }
 
 lambdas = fastapi.FastAPI()
@@ -44,6 +45,11 @@ async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
     headers = result["headers"]
     body = result["body"]
     encoded = result.get("isBase64Encoded", False)
-    content = base64.b64decode(body) if encoded else body.encode()
+    if encoded:
+        content = base64.b64decode(body)
+    if isinstance(body, memoryview):
+        content = body.tobytes()
+    else:
+        content = body.encode()
 
     return fastapi.Response(content=content, status_code=code, headers=headers)

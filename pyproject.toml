@@ -21,7 +21,7 @@ aicsimageio = "~3.1.4"
 pandas = "^1.3.4"
 fcsparser = "^0.2.4"
 xlrd = "^2.0.1"
-pyarrow = "^6.0.1"
+pyarrow = ">=6.0.1,<8"
 psutil = "^5.8.0"
 nbformat = "^5.1.3"
 nbconvert = "^6.3.0"
@@ -34,6 +34,7 @@ aiohttp = "^3.8.1"
 aiobotocore = "^2.1.0"
 cachetools = "^5.0.0"
 openpyxl = "^3.0.9"
+fsspec = {version = ">=2022.1.0", extras = ["http"]}
 
 [tool.poetry.dev-dependencies]
 asgiproxy = "^0.0"
