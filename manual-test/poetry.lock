@@ -386,8 +386,8 @@ sortedcontainers = "<2.0.0 || >2.0.0,<2.0.1 || >2.0.1"
 tblib = ">=1.6.0"
 toolz = ">=0.8.2"
 tornado = [
-    {version = ">=6.0.3", markers = "python_version >= \"3.8\""},
     {version = ">=5", markers = "python_version < \"3.8\""},
+    {version = ">=6.0.3", markers = "python_version >= \"3.8\""},
 ]
 zict = ">=0.1.3"
 
@@ -847,10 +847,10 @@ python-versions = ">=3.7.1"
 
 [package.dependencies]
 numpy = [
-    {version = ">=1.21.0", markers = "python_version >= \"3.10\""},
     {version = ">=1.17.3", markers = "platform_machine != \"aarch64\" and platform_machine != \"arm64\" and python_version < \"3.10\""},
     {version = ">=1.19.2", markers = "platform_machine == \"aarch64\" and python_version < \"3.10\""},
     {version = ">=1.20.0", markers = "platform_machine == \"arm64\" and python_version < \"3.10\""},
+    {version = ">=1.21.0", markers = "python_version >= \"3.10\""},
 ]
 python-dateutil = ">=2.7.3"
 pytz = ">=2017.3"
@@ -1052,7 +1052,7 @@ tests = ["coverage (==6.2)", "git-pylint-commit-hook", "numpy (>=1.14.0)", "pand
 
 [[package]]
 name = "quilt3-local"
-version = "1.1.2"
+version = "1.2.0"
 description = "Quilt3 catalog: local development mode"
 category = "main"
 optional = false
@@ -2483,8 +2483,8 @@ quilt3 = [
     {file = "quilt3-5.0.0.tar.gz", hash = "sha256:8192c90bd7193b811f9e51dcc9390558f8f4018f729d557c2836bbf2cf630bae"},
 ]
 quilt3-local = [
-    {file = "quilt3_local-1.1.2-py3-none-any.whl", hash = "sha256:b8405f251743c6fb1633e9e348a2809d7f9a54760280f0b5de0c30d4e99ea837"},
-    {file = "quilt3_local-1.1.2.tar.gz", hash = "sha256:b0cba89d8801edfd3f5c4257bc33f16f9aecffa548412d0aba479c2a8956ebcc"},
+    {file = "quilt3_local-1.2.0-py3-none-any.whl", hash = "sha256:bc7c2959c07af63d03da866c635e10d02900c1f591342f826ee616bc077d8b11"},
+    {file = "quilt3_local-1.2.0.tar.gz", hash = "sha256:98780b27ae1bfd8af1acf2e4206d638649715b922b99f78dab8e6312350d33b7"},
 ]
 requests = [
     {file = "requests-2.28.1-py3-none-any.whl", hash = "sha256:8fefa2a1a1365bf5520aac41836fbee479da67864514bdb821f31ce07ce65349"},
