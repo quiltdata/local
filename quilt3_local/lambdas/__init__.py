@@ -47,7 +47,7 @@ async def lambda_request(request: fastapi.Request, name: str, path: str = ""):
     encoded = result.get("isBase64Encoded", False)
     if encoded:
         content = base64.b64decode(body)
-    if isinstance(body, memoryview):
+    elif isinstance(body, memoryview):
         content = body.tobytes()
     else:
         content = body.encode()
