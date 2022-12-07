@@ -4,14 +4,17 @@ import typing as T
 import fastapi
 import starlette.staticfiles
 
+from fastapi.staticfiles import StaticFiles
+
 from .api import api
 from .lambdas import lambdas
 from .s3proxy import s3proxy
 
-REG_PREFIX = "/__reg"
-LAMBDA_PREFIX = "/__lambda"
-S3_PROXY_PREFIX = "/__s3proxy"
-CATALOG_BUNDLE = os.getenv("QUILT_CATALOG_BUNDLE")
+BASEPATH=os.getenv("QUILT_BASE_URL", "/")
+REG_PREFIX = BASEPATH + "__reg"
+LAMBDA_PREFIX = BASEPATH +  "__lambda"
+S3_PROXY_PREFIX = BASEPATH +  "__s3proxy"
+CATALOG_BUNDLE =  os.getenv("QUILT_CATALOG_BUNDLE")
 CATALOG_URL = os.getenv("QUILT_CATALOG_URL")
 
 app = fastapi.FastAPI()
@@ -81,8 +84,7 @@ if CATALOG_URL:
         await proxy_context.close()
 
 else:
-    app.mount("/", SPA(directory=CATALOG_BUNDLE), "SPA")
-
+    app.mount(BASEPATH, SPA(directory=CATALOG_BUNDLE), "SPA")
 
 def run():
     try:
