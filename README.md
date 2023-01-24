@@ -75,7 +75,7 @@ configurable via `QUILT_CATALOG_URL` env var).
 
 1. Make sure you set up [credentials for `poetry`](https://python-poetry.org/docs/repositories/#configuring-credentials)
 
-2. Bump package version in `pyproject.toml`
+2. Bump package version in `pyproject.toml` and update `CHANGELOG.md`
 
 3. Update catalog commit hash in `catalog-commit` if required
 
