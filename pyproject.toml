@@ -11,22 +11,28 @@ documentation = "https://docs.quiltdata.com"
 include = ["quilt3_local/catalog_bundle/*"]
 
 [tool.poetry.dependencies]
-python = ">=3.7.1,<3.11"
+python = ">=3.7.1,<4"
 ariadne = "^0.14.1"
 fastapi = "^0.70.0"
 importlib-resources = "^5.3.0"
 imageio = "~2.5.0"
 aicsimageio = "~3.1.4"
-pandas = "^1.3.4"
+pandas = [
+    {version = "^1.3.4", python = "<3.11"},
+    {version = "^1.5.0", python = ">=3.11"}
+]
 fcsparser = "^0.2.4"
 xlrd = "^2.0.1"
-pyarrow = "^7"
+pyarrow = ">=7,<13"
 psutil = "^5.8.0"
 nbformat = "^5.1.3"
 nbconvert = "^6.3.0"
 requests = "^2.26.0"
 jsonschema = "^3.0.1"
-numpy = "^1.21.4"
+numpy = [
+    {version = "^1.21.4", python = "<3.11"},
+    {version = "^1.23.2", python = ">=3.11"}
+]
 Pillow = ">=8.4,<10.0"
 aiohttp = "^3.8.1"
 aiobotocore = {version = "^2.1.0", extras = ["boto3"]}
@@ -37,7 +43,7 @@ fsspec = {version = ">=2022.1.0", extras = ["http"]}
 [tool.poetry.dev-dependencies]
 asgiproxy = "^0.0"
 black = "^22.10.0"
-uvicorn = {version = "^0.15.0", extras = ["standard"]}
+uvicorn = {version = "^0.22.0", extras = ["standard"]}
 
 [tool.poetry.scripts]
 quilt3-local = "quilt3_local.main:run"
