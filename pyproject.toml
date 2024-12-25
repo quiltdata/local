@@ -42,7 +42,7 @@ fsspec = {version = ">=2022.1.0", extras = ["http"]}
 
 [tool.poetry.dev-dependencies]
 asgiproxy = "^0.0"
-black = "^22.10.0"
+black = "^24.3.0"
 uvicorn = {version = "^0.22.0", extras = ["standard"]}
 
 [tool.poetry.scripts]
