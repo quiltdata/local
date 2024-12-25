@@ -33,7 +33,7 @@ numpy = [
     {version = "^1.21.4", python = "<3.11"},
     {version = "^1.23.2", python = ">=3.11"}
 ]
-Pillow = ">=8.4,<10.0"
+Pillow = ">=8.4,<11.0"
 aiohttp = "^3.8.1"
 aiobotocore = {version = "^2.1.0", extras = ["boto3"]}
 cachetools = "^5.0.0"
