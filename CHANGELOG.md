@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removed support for Python 3.7 and 3.8.
+- Removed support for Python 3.7 and 3.8. ([#21](https://github.com/quiltdata/local/pull/21))
 
 ## [1.2.1] - 2023-01-24
 
