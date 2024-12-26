@@ -24,12 +24,12 @@ class SPA(starlette.staticfiles.StaticFiles):
             directory = os.path.join(os.path.dirname(__file__), "catalog_bundle")
         super().__init__(directory=directory, packages=None, html=True, check_dir=True)
 
-    async def lookup_path(self, path: str) -> T.Tuple[str, os.stat_result]:
-        full_path, stat_result = await super().lookup_path(path)
+    def lookup_path(self, path: str) -> T.Tuple[str, os.stat_result]:
+        full_path, stat_result = super().lookup_path(path)
 
         # return index if a file cannot be found
         if stat_result is None:
-            return await super().lookup_path(self.index)
+            return super().lookup_path(self.index)
 
         return (full_path, stat_result)
 
