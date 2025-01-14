@@ -23,7 +23,7 @@ pandas = [
 ]
 fcsparser = "^0.2.4"
 xlrd = "^2.0.1"
-pyarrow = ">=7,<13"
+pyarrow = ">=7,<15"
 psutil = "^5.8.0"
 nbformat = "^5.1.3"
 nbconvert = "^6.3.0"
