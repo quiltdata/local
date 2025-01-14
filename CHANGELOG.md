@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add support for Python 3.11. ([#19](https://github.com/quiltdata/local/pull/19))
+
 ### Fixed
 
 - Fix installation with quilt3 >= 6. ([#26](https://github.com/quiltdata/local/pull/26))
