@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix `pip install quilt3[catalog]` by adding a dependency on `aiobotocore[boto3]`
-  and dropping direct dependecies on `botocore` and `boto3`.
+  and dropping direct dependencies on `botocore` and `boto3`.
 
 ## [1.2.0] - 2022-10-13
 
